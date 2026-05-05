@@ -1,9 +1,13 @@
-export { default } from "next-auth/middleware";
+import nextAuthMiddleware from "next-auth/middleware";
 
-// These are the routes you want to protect
+// We explicitly declare the function here so Next.js 16 recognizes it
+export default function proxy(req: any) {
+  return nextAuthMiddleware(req);
+}
+
 export const config = {
   matcher: [
-    "/dashboard/:path*", 
+    "/dashboard/:path*",
     "/admin/:path*"
   ]
 };
