@@ -31,3 +31,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  await connectDB();
+  try {
+    const resolvedParams = await params; 
+    
+    await Subject.findByIdAndDelete(resolvedParams.id);
+    return NextResponse.json({ message: 'Subject deleted successfully' });
+  } catch (error) {
+    return NextResponse.json({ message: 'Failed to delete' }, { status: 500 });
+  }
+}
