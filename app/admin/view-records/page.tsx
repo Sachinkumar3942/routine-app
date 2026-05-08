@@ -2,27 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Professor, Subject } from "@/types";
+import { Professor, Subject, Room } from "@/types";
 
 export default function ViewRecordsPage() {
-  const [activeTab, setActiveTab] = useState<"PROFESSORS" | "SUBJECTS">(
+  const [activeTab, setActiveTab] = useState<"PROFESSORS" | "SUBJECTS" | "ROOMS">(
     "PROFESSORS",
   );
   const [professors, setProfessors] = useState<Professor[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [profRes, subRes] = await Promise.all([
+        const [profRes, subRes, roomRes] = await Promise.all([
           fetch("/api/professors"),
           fetch("/api/subjects"),
+          fetch("/api/rooms"),
         ]);
 
         if (profRes.ok) setProfessors(await profRes.json());
         if (subRes.ok) setSubjects(await subRes.json());
+        if (roomRes.ok) setRooms(await roomRes.json());
       } catch (error) {
         console.error("Failed to fetch records:", error);
       } finally {
@@ -33,12 +36,12 @@ export default function ViewRecordsPage() {
     fetchData();
   }, []);
 
-  const handleDelete = async (id: string, type: "PROFESSOR" | "SUBJECT") => {
+  const handleDelete = async (id: string, type: "PROFESSOR" | "SUBJECT" | "ROOM") => {
     if (!confirm(`Are you sure you want to delete this ${type.toLowerCase()}?`))
       return;
 
     const endpoint =
-      type === "PROFESSOR" ? `/api/professors/${id}` : `/api/subjects/${id}`;
+      type === "PROFESSOR" ? `/api/professors/${id}` : type === "SUBJECT" ? `/api/subjects/${id}` : `/api/rooms/${id}`;
 
     try {
       const res = await fetch(endpoint, { method: "DELETE" });
@@ -46,8 +49,10 @@ export default function ViewRecordsPage() {
         // Remove it from the screen immediately
         if (type === "PROFESSOR") {
           setProfessors(professors.filter((p) => p._id !== id));
-        } else {
+        } else if (type === "SUBJECT") {
           setSubjects(subjects.filter((s) => s._id !== id));
+        } else {
+          setRooms(rooms.filter((r) => r._id !== id));
         }
       }
     } catch (error) {
@@ -82,6 +87,16 @@ export default function ViewRecordsPage() {
               }`}
             >
               Course Catalog
+            </button>
+            <button
+              onClick={() => setActiveTab("ROOMS")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeTab === "ROOMS"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Rooms
             </button>
           </div>
         </div>
@@ -143,7 +158,7 @@ export default function ViewRecordsPage() {
                     )}
                   </tbody>
                 </table>
-              ) : (
+              ) : activeTab === "SUBJECTS" ? (
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-100 border-b border-gray-200 text-sm text-gray-600">
@@ -188,6 +203,46 @@ export default function ViewRecordsPage() {
                     )}
                   </tbody>
                 </table>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 border-b border-gray-200 text-sm text-gray-600">
+                      <th className="p-4 font-semibold">Room Number</th>
+                      <th className="p-4 font-semibold"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rooms.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={2}
+                          className="p-4 text-center text-gray-500"
+                        >
+                          No rooms registered yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      rooms.map((room) => (
+                        <tr
+                          key={room._id}
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="p-4 font-bold text-gray-700">
+                            {room.roomNo}
+                          </td>
+                          <td className="p-4">
+                            <button
+                              onClick={() => handleDelete(room._id, "ROOM")}
+                              className="text-red-500 hover:text-red-700 text-sm font-medium"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               )}
             </div>
           )}
@@ -210,6 +265,12 @@ export default function ViewRecordsPage() {
               className="text-sm text-gray-600 hover:text-blue-600 font-medium"
             >
               + Add Subject
+            </Link>
+            <Link
+              href="/admin/rooms"
+              className="text-sm text-gray-600 hover:text-blue-600 font-medium"
+            >
+              + Add Room
             </Link>
           </div>
         </div>

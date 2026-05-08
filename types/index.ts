@@ -14,6 +14,12 @@ export interface Subject {
   credits?: number;
 }
 
+// 2.5 The Room Type (Frontend shape)
+export interface Room {
+  _id: string;
+  roomNo: string;
+}
+
 // 3. The Routine Slot Type (The main connector)
 export interface RoutineSlot {
   _id: string;

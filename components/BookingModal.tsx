@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Professor, Subject } from '@/types';
+import { Professor, Subject, Room } from '@/types';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface BookingModalProps {
   batch: string;
   professors: Professor[];
   subjects: Subject[];
+  rooms: Room[];
 }
 
 export default function BookingModal({
@@ -22,7 +23,8 @@ export default function BookingModal({
   period,
   batch,
   professors,
-  subjects
+  subjects,
+  rooms
 }: BookingModalProps) {
   const [selectedProf, setSelectedProf] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
@@ -93,14 +95,19 @@ export default function BookingModal({
           {/* Room Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Room No.</label>
-            <input 
-              type="text" 
-              className="w-full border border-gray-300 rounded p-2 mt-1"
-              placeholder="e.g. LH-101"
+            <select
+              className="w-full border border-gray-300 rounded p-2 mt-1 bg-white"
               value={room}
               onChange={(e) => setRoom(e.target.value)}
               required
-            />
+            >
+              <option value="">-- Select Room --</option>
+              {rooms.map((r) => (
+                <option key={r._id} value={r.roomNo}>
+                  {r.roomNo}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex justify-end gap-2 mt-6">

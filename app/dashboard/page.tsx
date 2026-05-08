@@ -6,7 +6,7 @@ import {jsPDF} from 'jspdf';
 import RoutineGrid from "@/components/RoutineGrid";
 import ActionSidebar from "@/components/ActionSidebar";
 import BookingModal from "@/components/BookingModal";
-import { RoutineSlot, Professor, Subject } from "@/types"; 
+import { RoutineSlot, Professor, Subject, Room } from "@/types";
 import FacultyRoutineGrid from "@/components/FacultyRoutineGrid";
 
 // Mock Batches - In a real app, you would fetch these from a database
@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const [scheduleData, setScheduleData] = useState<RoutineSlot[]>([]);
   const [professors, setProfessors] = useState<Professor[]>([]); // <--- Stores list for dropdown
   const [subjects, setSubjects] = useState<Subject[]>([]); // <--- Stores list for dropdown
+  const [rooms, setRooms] = useState<Room[]>([]); // <--- Stores list for dropdown
   const printRef = useRef<HTMLDivElement>(null);
   const [statusMessage, setStatusMessage] = useState("Ready.");
   const [viewMode, setViewMode] = useState<"CLASS" | "FACULTY">("CLASS");
@@ -37,19 +38,22 @@ export default function DashboardPage() {
       setStatusMessage("Loading data...");
       try {
         // Fetch everything in parallel
-        const [routineRes, profRes, subRes] = await Promise.all([
+        const [routineRes, profRes, subRes, roomRes] = await Promise.all([
           fetch("/api/routine"),
           fetch("/api/professors"),
           fetch("/api/subjects"),
+          fetch("/api/rooms"),
         ]);
 
         const routineData = await routineRes.json();
         const profData = await profRes.json();
         const subData = await subRes.json();
+        const roomData = await roomRes.json();
 
         setScheduleData(routineData);
         setProfessors(profData);
         setSubjects(subData);
+        setRooms(roomData);
         setStatusMessage("System Ready.");
       } catch (error) {
         console.error(error);
@@ -254,6 +258,7 @@ export default function DashboardPage() {
         batch={selectedSlot?.batch || ""}
         professors={professors} // Passing fetched data
         subjects={subjects} // Passing fetched data
+        rooms={rooms} // Passing fetched data
       />
     </div>
   );
