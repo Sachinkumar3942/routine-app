@@ -6,25 +6,28 @@ import bcrypt from 'bcryptjs';
 export async function GET() {
   await connectDB();
   
-  const email = "adminecm@nitjsr.in";
-  const rawPassword = "ecm1234";
+  const branches = ["cse", "ece", "ee", "mech", "pie", "ecm", "meta"];
+  const created = [];
 
-  // Check if already exists
-  const existing = await Admin.findOne({ email });
-  if (existing) {
-    return NextResponse.json({ message: "Admin already exists!" });
+  for (const branch of branches) {
+    const email = `admin${branch}@nitjsr.in`;
+    const rawPassword = `${branch}1234`;
+
+    const existing = await Admin.findOne({ email });
+    if (!existing) {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(rawPassword, salt);
+      await Admin.create({ email, passwordHash });
+      created.push(email);
+    }
   }
 
-  // Hash the password securely
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(rawPassword, salt);
-
-  // Save to DB
-  await Admin.create({ email, passwordHash });
+  if (created.length === 0) {
+    return NextResponse.json({ message: "All admins already exist!" });
+  }
 
   return NextResponse.json({ 
-    message: "Admin created successfully!", 
-    email: email, 
-    password: rawPassword 
+    message: "Admins created successfully!", 
+    created 
   });
 }

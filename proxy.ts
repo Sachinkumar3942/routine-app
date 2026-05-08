@@ -7,7 +7,6 @@ export default function proxy(req: any) {
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
     "/admin/:path*"
   ]
 };

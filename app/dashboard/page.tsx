@@ -3,16 +3,36 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toPng } from 'html-to-image';
 import {jsPDF} from 'jspdf';
+import { useSession } from "next-auth/react";
 import RoutineGrid from "@/components/RoutineGrid";
 import ActionSidebar from "@/components/ActionSidebar";
 import BookingModal from "@/components/BookingModal";
 import { RoutineSlot, Professor, Subject, Room } from "@/types";
 import FacultyRoutineGrid from "@/components/FacultyRoutineGrid";
 
-// Mock Batches - In a real app, you would fetch these from a database
-const BATCHES = ["CSE 4S", "CSE 6S", "CSE 8S", "MTECH CSE 2S"];
+const BRANCHES_LIST = ["CSE", "ECE", "EE", "MECH", "PIE", "ECM", "META"];
+const BASE_BATCHES: string[] = [];
+for (const branch of BRANCHES_LIST) {
+  for (let s = 1; s <= 8; s++) {
+    BASE_BATCHES.push(`${branch} ${s}S`);
+  }
+}
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const userEmail = session?.user?.email || "";
+  const match = userEmail.match(/^admin([a-z]+)@/i);
+  const adminBranch = match ? match[1].toUpperCase() : "";
+
+  const BATCHES = [...BASE_BATCHES].sort((a, b) => {
+    if (!adminBranch) return 0;
+    const aIsBranch = a.includes(adminBranch);
+    const bIsBranch = b.includes(adminBranch);
+    if (aIsBranch && !bIsBranch) return -1;
+    if (!aIsBranch && bIsBranch) return 1;
+    return 0;
+  });
+
   // --- STATE MANAGEMENT ---
   const [scheduleData, setScheduleData] = useState<RoutineSlot[]>([]);
   const [professors, setProfessors] = useState<Professor[]>([]); // <--- Stores list for dropdown
@@ -79,6 +99,17 @@ export default function DashboardPage() {
   // --- ACTIONS (Sidebar & Grid Logic) ---
 
   const handleSlotClick = (day: number, period: number, batch: string) => {
+    if (!session) {
+      alert("Please login to assign or modify classes.");
+      return;
+    }
+    
+    // For admin, check if branch matches
+    if (adminBranch && !batch.includes(adminBranch)) {
+      alert(`Permission Denied: You can only assign classes for ${adminBranch}.`);
+      return;
+    }
+
     // 1. Set which cell we are editing
     setSelectedSlot({ day, period, batch });
     // 2. Open the popup
@@ -107,7 +138,7 @@ export default function DashboardPage() {
           professor: profId,
           subject: subId,
           roomNumber: roomId,
-          branch: "CSE", // You might want to make this dynamic later
+          branch: selectedSlot.batch.split(" ")[0], // Extract branch dynamically
         }),
       });
 
