@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import RoutineSlot from '@/models/RoutineSlot';
 
+// 🚨 VERCEL FIX: Explicitly import models so Mongoose knows what to populate!
+import '@/models/Professor';
+import '@/models/Subject';
+
 // GET: Fetch the entire routine (or filter by query params)
 export async function GET(req: Request) {
   await connectDB();
-  
+
   // Optional: You can get query params like ?batch=CSE4S
   const { searchParams } = new URL(req.url);
   const batchFilter = searchParams.get('batch');
@@ -19,6 +23,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(slots);
   } catch (error) {
+    console.error("Routine Fetch Error:", error); // Added to help debug in Vercel logs if it fails again
     return NextResponse.json({ message: 'Failed to load routine' }, { status: 500 });
   }
 }
@@ -28,17 +33,17 @@ export async function POST(req: Request) {
   await connectDB();
   try {
     const body = await req.json();
-    
+
     // "Upsert": If a slot exists at this Day/Period/Batch, overwrite it.
     // Otherwise, create a new one.
-    const filter = { 
-      day: body.day, 
-      period: body.period, 
-      batch: body.batch 
+    const filter = {
+      day: body.day,
+      period: body.period,
+      batch: body.batch
     };
 
     const update = { ...body };
-    
+
     const result = await RoutineSlot.findOneAndUpdate(filter, update, {
       new: true,   // Return the updated document
       upsert: true, // Create if doesn't exist
