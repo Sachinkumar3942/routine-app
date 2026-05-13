@@ -38,32 +38,32 @@ const RoutineGrid: React.FC<RoutineGridProps> = ({
       </div>
 
       <div className="flex">
-        {/* Left Column: Day Headers (1, 2, 3...) */}
+        {/* Left Column: Day Headers (Mon, Tue, Wed...) */}
         <div className="flex flex-col border-r border-gray-400 bg-orange-100 w-12 shrink-0">
            {/* Empty top-left corner slot for alignment */}
            <div className="h-8 border-b border-gray-400 bg-gray-300"></div>
            {[1, 2, 3, 4, 5].map((day) => ( // Showing Mon-Fri
-             <div key={day} className="h-16 flex items-center justify-center font-bold text-sm border-b border-gray-300">
-               {day}
+             <div key={day} className="h-16 flex items-center justify-center font-bold text-xs border-b border-gray-300">
+               {DAYS[day].substring(0, 3)}
              </div>
            ))}
         </div>
 
         {/* Main Grid Area */}
-        <div className="flex-1 overflow-x-auto">
-          {/* Top Row: Period Headers (1, 2, 3...) */}
-          <div className="grid grid-cols-10 min-w-800">
+        <div className="flex-1">
+          {/* Top Row: Period Headers (Time Slots) */}
+          <div className="grid grid-cols-8">
             {Object.keys(PERIODS).map((p) => (
-              <div key={p} className="h-8 bg-yellow-100 border-r border-b border-gray-400 flex items-center justify-center text-xs font-bold text-gray-700">
-                {p}
+              <div key={p} className="h-8 bg-yellow-100 border-r border-b border-gray-400 flex items-center justify-center text-[10px] leading-tight font-bold text-gray-700 text-center px-1">
+                {PERIODS[Number(p)]}
               </div>
             ))}
           </div>
 
           {/* Grid Rows */}
           {[1, 2, 3, 4, 5].map((day) => (
-            <div key={day} className="grid grid-cols-10 min-w-800">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((period) => (
+            <div key={day} className="grid grid-cols-8">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((period) => (
                 <CellSlot
                   key={`${day}-${period}`}
                   day={day}

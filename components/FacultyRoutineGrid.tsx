@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { RoutineSlot } from '@/types';
+import { DAYS as CONST_DAYS, PERIODS as CONST_PERIODS } from '@/lib/constants';
 
 interface FacultyRoutineGridProps {
   professorName: string;
@@ -26,13 +27,13 @@ export default function FacultyRoutineGrid({ professorName, scheduleData }: Facu
           <thead>
             <tr>
               <th className="border p-2 bg-gray-100 text-gray-600 w-24">Day</th>
-              {PERIODS.map(p => <th key={p} className="border p-2 bg-gray-100 text-gray-600">Period {p}</th>)}
+              {PERIODS.map(p => <th key={p} className="border p-2 bg-gray-100 text-gray-600 text-xs">{CONST_PERIODS[p]}</th>)}
             </tr>
           </thead>
           <tbody>
             {DAYS.map(day => (
               <tr key={day}>
-                <td className="border p-2 font-bold bg-gray-50 text-gray-700">Day {day}</td>
+                <td className="border p-2 font-bold bg-gray-50 text-gray-700">{CONST_DAYS[day].substring(0, 3)}</td>
                 {PERIODS.map(period => {
                   const slot = getSlot(day, period);
                   return (
